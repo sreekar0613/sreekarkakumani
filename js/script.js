@@ -87,25 +87,28 @@
       });
   }
 
-  /* 3b. Hero parallax — the particle backdrop moves at ~0.4x the scroll
-     speed of the foreground: translating it down by 0.6 × scrollY leaves a
-     net apparent speed of 0.4x. Transform-only (never touches layout),
-     rAF-throttled, clamped to the hero's height, and skipped entirely
-     under reduced motion. The wrapper keeps z-index 0 below .hero-content
-     (z-index 1), so stacking is unchanged. */
+  /* 3b. Parallax — the fixed site-wide particle backdrop drifts up at 0.4x
+     the scroll speed while the hero is in view (so the background appears
+     to scroll at ~0.4x the foreground), then holds still, keeping the
+     particle field consistent behind the rest of the page. The drift is
+     clamped to the wrapper's slack below the viewport (it's 140vh tall),
+     so no gap can ever appear. Transform-only (never touches layout),
+     rAF-throttled, skipped entirely under reduced motion. */
   var parallaxLayer = document.getElementById('tsparticles');
-  var heroSection = document.getElementById('hero');
-  if (parallaxLayer && heroSection && !reducedMotion) {
-    var heroHeight = heroSection.offsetHeight;
+  if (parallaxLayer && !reducedMotion) {
+    var parallaxSlack = 0;
     var parallaxQueued = false;
     var lastShift = -1;
 
+    var measureParallax = function () {
+      parallaxSlack = Math.max(0, parallaxLayer.offsetHeight - window.innerHeight);
+    };
     var applyParallax = function () {
       parallaxQueued = false;
-      var shift = Math.round(Math.min(window.scrollY, heroHeight) * 0.6);
+      var shift = Math.round(Math.min(window.scrollY * 0.4, parallaxSlack));
       if (shift === lastShift) return;
       lastShift = shift;
-      parallaxLayer.style.transform = 'translate3d(0, ' + shift + 'px, 0)';
+      parallaxLayer.style.transform = 'translate3d(0, -' + shift + 'px, 0)';
     };
     var queueParallax = function () {
       if (!parallaxQueued) {
@@ -114,14 +117,15 @@
       }
     };
 
+    measureParallax();
     parallaxLayer.style.willChange = 'transform';
     window.addEventListener('scroll', queueParallax, { passive: true });
     window.addEventListener('resize', function () {
-      heroHeight = heroSection.offsetHeight;
+      measureParallax();
       queueParallax();
     }, { passive: true });
     queueParallax(); // set the initial offset (covers reloads mid-page)
-    console.log('[portfolio] hero parallax active');
+    console.log('[portfolio] parallax backdrop active');
   }
 
   /* 4. Skill bars — HTML ships with real values (no-JS fallback);

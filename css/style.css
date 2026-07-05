@@ -290,10 +290,17 @@ h1, h2, h3 {
   overflow: hidden;
 }
 
+/* Site-wide particle backdrop: fixed behind all content (negative z-index
+   keeps it under every section and card). 140vh tall so the parallax drift
+   (clamped to the slack below the viewport) can never expose a gap. */
 #tsparticles {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 140vh;
+  z-index: -1;
+  pointer-events: none;
 }
 #tsparticles canvas { position: absolute !important; inset: 0; }
 
