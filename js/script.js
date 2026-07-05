@@ -87,6 +87,43 @@
       });
   }
 
+  /* 3b. Hero parallax — the particle backdrop moves at ~0.4x the scroll
+     speed of the foreground: translating it down by 0.6 × scrollY leaves a
+     net apparent speed of 0.4x. Transform-only (never touches layout),
+     rAF-throttled, clamped to the hero's height, and skipped entirely
+     under reduced motion. The wrapper keeps z-index 0 below .hero-content
+     (z-index 1), so stacking is unchanged. */
+  var parallaxLayer = document.getElementById('tsparticles');
+  var heroSection = document.getElementById('hero');
+  if (parallaxLayer && heroSection && !reducedMotion) {
+    var heroHeight = heroSection.offsetHeight;
+    var parallaxQueued = false;
+    var lastShift = -1;
+
+    var applyParallax = function () {
+      parallaxQueued = false;
+      var shift = Math.round(Math.min(window.scrollY, heroHeight) * 0.6);
+      if (shift === lastShift) return;
+      lastShift = shift;
+      parallaxLayer.style.transform = 'translate3d(0, ' + shift + 'px, 0)';
+    };
+    var queueParallax = function () {
+      if (!parallaxQueued) {
+        parallaxQueued = true;
+        window.requestAnimationFrame(applyParallax);
+      }
+    };
+
+    parallaxLayer.style.willChange = 'transform';
+    window.addEventListener('scroll', queueParallax, { passive: true });
+    window.addEventListener('resize', function () {
+      heroHeight = heroSection.offsetHeight;
+      queueParallax();
+    }, { passive: true });
+    queueParallax(); // set the initial offset (covers reloads mid-page)
+    console.log('[portfolio] hero parallax active');
+  }
+
   /* 4. Skill bars — HTML ships with real values (no-JS fallback);
      JS zeroes them, then animates to target when #skills scrolls into view. */
   var bars = Array.prototype.slice.call(document.querySelectorAll('.skill-bar'));

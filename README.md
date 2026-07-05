@@ -71,4 +71,4 @@ No custom domain, Cloudflare, or DNS config needed.
 
 ## TODO
 
-- [ ] Replace the hero `RESUME` button's placeholder `href="#"` with a link to a resume PDF (drop the PDF in the repo root and point the button at it).
+- [ ] Replace `assets/resume.pdf` (placeholder) with the actual resume PDF. Keep the filename exactly `resume.pdf`, or update the RESUME button `href` in `index.html` to match.
